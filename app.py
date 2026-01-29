@@ -30,19 +30,25 @@ distance = haversine(lat,long,merch_lat,merch_long)
 
 if st.button("Check For Fraud"):
     if merchant and category and cc_num:
-        input_data = pd.DataFrame([[merchant, category,amt,distance,hour,day,month,gender, cc_num]],
-                                  columns=['merchant','category','amt','distance','hour','day','month','gender','cc_num'])
-        
-        categorical_col = ['merchant','category','gender']
-        for col in categorical_col:
-            try:
-                input_data[col] = encoder[col].transform(input_data[col])
-            except ValueError:
-                input_data[col]=-1
+        input_data = pd.DataFrame([[merchant, category, amt, distance, hour, day, month, gender, cc_num]],
+                                  columns=model)
 
-        input_data['cc_num'] = input_data['cc_num'].apply(lambda x:hash(x) % (10 ** 2))
-        prediction = model.predict(input_data)[0]
-        result = "Fraudulant Transaction" if prediction == 1 else " Legitimate Transaction"
+        categorical_cols = ['merchant','category','gender']
+        for col in categorical_cols:
+            if col in encoder:
+                try:
+                    input_data[col] = encoder[col].transform(input_data[col])
+                except:
+                    input_data[col] = -1
+
+        input_data['cc_num'] = input_data['cc_num'].astype(str).apply(
+            lambda x: int(x[-4:]) if x.isdigit() else 0
+        )
+
+        prediction = model.predict(input_data)
+
+        result = "Fraudulent Transaction" if prediction[0] > 0.5 else "Legitimate Transaction"
         st.subheader(f"Prediction: {result}")
     else:
-        st.error("Please Fill all required fields") 
+        st.error("Please fill all required fields")
+ 
