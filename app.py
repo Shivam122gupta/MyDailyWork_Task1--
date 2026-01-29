@@ -45,4 +45,4 @@ if st.button("Check For Fraud"):
         result = "Fraudulant Transaction" if prediction == 1 else " Legitimate Transaction"
         st.subheader(f"Prediction: {result}")
     else:
-        st.error("Please Fill all required fields")
+        st.error("Please Fill all required fields") 
